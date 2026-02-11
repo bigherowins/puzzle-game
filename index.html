@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Gaby - A Valentine's Puzzle</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #ff4d6d;
+            --secondary: #ff8fa3;
+            --bg: #fff0f3;
+            --text: #590d22;
+            --glass: rgba(255, 255, 255, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #fff0f3 0%, #ffe5ec 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        /* Container for all screens */
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(255, 77, 109, 0.15);
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* Typography */
+        h1, h2 {
+            font-family: 'Dancing Script', cursive;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #4a4a4a;
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, background 0.3s, opacity 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 77, 109, 0.3);
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            background: #d90429;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        /* Screens Logic */
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Puzzle Grid */
+        .puzzle-container {
+            width: 100%;
+            aspect-ratio: 3/4; /* Maintains portrait ratio for 3x4 grid */
+            background: #ddd;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 2px;
+            border: 4px solid white;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 auto 20px auto;
+            position: relative;
+        }
+
+        .tile {
+            background-size: 300% 400%; /* 3 columns, 4 rows */
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+            position: relative;
+        }
+
+        .tile:hover {
+            filter: brightness(1.1);
+        }
+
+        .tile.selected {
+            border: 2px solid var(--primary);
+            z-index: 10;
+            transform: scale(0.95);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .tile.correct {
+            border: none;
+        }
+
+        /* Success Note Card */
+        .success-note {
+            background: #fff;
+            border-left: 5px solid var(--primary);
+            padding: 20px;
+            text-align: left;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* Outro Images */
+        .outro-gif {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div id="screen-intro" class="screen active">
+            <h1>Dear Gaby...</h1>
+            <p>
+                My dearest baby, you're about to play a game I built for you called "Some Reasons Why I am Grateful". 
+                It's a puzzle game where you re-arrange cartoon avatars of fun moments we shared together.
+            </p>
+            <p>
+                It's a reminder that our lives are fun and filled with love. I love you and I can't wait to knock you off your feet with even better moments everyday of our lives.
+            </p>
+            <button class="btn" onclick="startGame()">Play Game</button>
+        </div>
+
+        <div id="screen-game" class="screen">
+            <h2 id="level-title">Moment 1</h2>
+            
+            <p style="font-size: 0.9rem; color: #888; margin-bottom: 10px;">Tap two tiles to swap them!</p>
+
+            <div class="puzzle-container" id="puzzle-board">
+                </div>
+
+            <div id="success-area" style="display: none;">
+                <div class="success-note">
+                    <strong>❤️ A Note:</strong><br>
+                    <span id="level-note">Text goes here...</span>
+                </div>
+                <button class="btn" onclick="nextLevel()">Play Next</button>
+            </div>
+
+            <div id="action-area">
+                <button class="btn" id="submit-btn" onclick="submitPuzzle()" disabled>Submit Puzzle</button>
+            </div>
+        </div>
+
+        <div id="screen-outro" class="screen">
+            <h1>You Won!</h1>
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeDh2d2Q1MWtlbWpxNzY2ZHV3c2dnbWQzaWhqdGJpcWl4YnNhMG9xZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/KmxmoHUGPDjfQXqGgv/giphy.gif" alt="Cute Love Gif" class="outro-gif">
+            <p>
+                My beautiful woman, puzzle time is over, but the game of our lives is always on. I enjoy playing it with you and I want to win it with you.
+            </p>
+            <p style="font-size: 2rem;">❤️</p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA CONFIGURATION ---
+        // REPLACE THE IMAGE LINKS BELOW with your actual images.
+        // Current image is a placeholder from your prompt.
+        const levels = [
+            {
+                title: "Moment 1",
+                image: "https://www.regirlworld.ng/cdn/shop/files/Motherprofilepicture_1.jpg?v=1744905857&width=800",
+                note: "This is us in Seycheles. I am not sure how we decided on Seycheles, but I was glad we came."
+            },
+            {
+                title: "Moment 2",
+                image: "https://www.regirlworld.ng/cdn/shop/files/Motherprofilepicture_1.jpg?v=1744905857&width=800",
+                note: "This was our first date. I had no idea how this will turn out on my way, but it was by far one of the best nights of my life."
+            },
+            {
+                title: "Moment 3",
+                image: "https://www.regirlworld.ng/cdn/shop/files/Motherprofilepicture_1.jpg?v=1744905857&width=800",
+                note: "This was our first date. I had no idea how this will turn out on my way, but it was by far one of the best nights of my life."
+            },
+            {
+                title: "Moment 4",
+                image: "https://www.regirlworld.ng/cdn/shop/files/Motherprofilepicture_1.jpg?v=1744905857&width=800",
+                note: "This was our first date. I had no idea how this will turn out on my way, but it was by far one of the best nights of my life."
+            },
+            {
+                title: "Moment 5",
+                image: "https://www.regirlworld.ng/cdn/shop/files/Motherprofilepicture_1.jpg?v=1744905857&width=800",
+                note: "This was our first date. I had no idea how this will turn out on my way, but it was by far one of the best nights of my life."
+            }
+        ];
+
+        // --- GAME STATE ---
+        let currentLevelIndex = 0;
+        let selectedTile = null;
+        let tiles = []; // Holds the current order of tile indices [0, 1, 2...]
+        const rows = 4;
+        const cols = 3;
+
+        // --- DOM ELEMENTS ---
+        const screenIntro = document.getElementById('screen-intro');
+        const screenGame = document.getElementById('screen-game');
+        const screenOutro = document.getElementById('screen-outro');
+        
+        const puzzleBoard = document.getElementById('puzzle-board');
+        const levelTitle = document.getElementById('level-title');
+        const levelNote = document.getElementById('level-note');
+        const submitBtn = document.getElementById('submit-btn');
+        const successArea = document.getElementById('success-area');
+        const actionArea = document.getElementById('action-area');
+
+        // --- FUNCTIONS ---
+
+        function startGame() {
+            screenIntro.classList.remove('active');
+            screenGame.classList.add('active');
+            loadLevel(0);
+        }
+
+        function loadLevel(index) {
+            currentLevelIndex = index;
+            const data = levels[index];
+            
+            // Reset UI
+            levelTitle.innerText = data.title;
+            levelNote.innerText = data.note;
+            successArea.style.display = 'none';
+            actionArea.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Submit Puzzle";
+            
+            // Create tiles array [0, 1, ... 11]
+            tiles = Array.from({length: rows * cols}, (_, i) => i);
+            
+            // Scramble tiles
+            shuffle(tiles);
+            
+            // Render grid
+            renderBoard(data.image);
+        }
+
+        function shuffle(array) {
+            // Fisher-Yates shuffle
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            // Ensure it doesn't accidentally shuffle into the solved state (rare but possible)
+            if (checkIfSolved()) shuffle(array);
+        }
+
+        function renderBoard(imageUrl) {
+            puzzleBoard.innerHTML = '';
+            
+            tiles.forEach((tileIndex, positionIndex) => {
+                const tile = document.createElement('div');
+                tile.classList.add('tile');
+                
+                // Calculate position of the original image slice
+                // tileIndex 0 = top left, tileIndex 11 = bottom right
+                const originRow = Math.floor(tileIndex / cols);
+                const originCol = tileIndex % cols;
+                
+                const percentX = originCol * 50; // 0%, 50%, 100% (for 3 cols)
+                const percentY = originRow * 33.33; // 0%, 33%, 66%, 100% (for 4 rows)
+
+                tile.style.backgroundImage = `url('${imageUrl}')`;
+                tile.style.backgroundPosition = `${percentX}% ${percentY}%`;
+                
+                // Click event for swapping
+                tile.onclick = () => handleTileClick(positionIndex);
+                
+                puzzleBoard.appendChild(tile);
+            });
+        }
+
+        function handleTileClick(index) {
+            // If the puzzle is already submitted/solved, do nothing
+            if (successArea.style.display === 'block') return;
+
+            const tileElements = document.querySelectorAll('.tile');
+
+            if (selectedTile === null) {
+                // Select first tile
+                selectedTile = index;
+                tileElements[index].classList.add('selected');
+            } else if (selectedTile === index) {
+                // Deselect if clicking same tile
+                tileElements[index].classList.remove('selected');
+                selectedTile = null;
+            } else {
+                // Swap logic
+                swapTiles(selectedTile, index);
+                
+                // Remove selection visual
+                tileElements[selectedTile].classList.remove('selected');
+                selectedTile = null;
+
+                // Re-render to show new positions
+                renderBoard(levels[currentLevelIndex].image);
+
+                // Check if solved to enable button
+                if (checkIfSolved()) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Submit Puzzle (Ready!)";
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.innerText = "Submit Puzzle";
+                }
+            }
+        }
+
+        function swapTiles(pos1, pos2) {
+            const temp = tiles[pos1];
+            tiles[pos1] = tiles[pos2];
+            tiles[pos2] = temp;
+        }
+
+        function checkIfSolved() {
+            for (let i = 0; i < tiles.length; i++) {
+                if (tiles[i] !== i) return false;
+            }
+            return true;
+        }
+
+        function submitPuzzle() {
+            // Visual feedback
+            const tileElements = document.querySelectorAll('.tile');
+            tileElements.forEach(t => {
+                t.style.border = 'none';
+                t.style.gap = '0';
+            });
+
+            // Confetti
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ff4d6d', '#ff8fa3', '#fff']
+            });
+
+            // Show Note
+            actionArea.style.display = 'none';
+            successArea.style.display = 'block';
+        }
+
+        function nextLevel() {
+            if (currentLevelIndex < levels.length - 1) {
+                loadLevel(currentLevelIndex + 1);
+            } else {
+                // Game Over / Outro
+                screenGame.classList.remove('active');
+                screenOutro.classList.add('active');
+                // Final celebration
+                let end = Date.now() + 3000;
+                (function frame() {
+                    confetti({
+                        particleCount: 5,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 },
+                        colors: ['#ff4d6d', '#ff8fa3']
+                    });
+                    confetti({
+                        particleCount: 5,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 },
+                        colors: ['#ff4d6d', '#ff8fa3']
+                    });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                }());
+            }
+        }
+
+    </script>
+</body>
+</html>
