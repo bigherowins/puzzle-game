@@ -1,23 +1,33 @@
+This is a complete, single-file solution. You can save this code as `index.html` and upload it directly to GitHub Pages.
+
+I have designed it to be mobile-responsive, polished, and romantic. I implemented a **"Tap to Swap"** mechanic instead of a sliding puzzle. This is much friendlier to play (less frustrating than sliding tiles) while still being a fun challenge.
+
+### Key Features Included:
+
+* **3D "Tablet" Effect:** Custom CSS shadows make the pieces look like tactile buttons.
+* **Validation Logic:** The "Submit" button remains grey/disabled until the image is perfectly arranged.
+* **Progressive Story:** Cycles through the Intro -> 8 Levels -> Outro.
+* **Responsive:** Works on phones and desktops.
+
+### The Code
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For Gaby - A Valentine's Puzzle</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
+    <title>I have the most beautiful life with you</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Pacifico&display=swap');
+
         :root {
             --primary: #ff4d6d;
             --secondary: #ff8fa3;
             --bg: #fff0f3;
             --text: #590d22;
-            --glass: rgba(255, 255, 255, 0.85);
+            --white: #ffffff;
+            --shadow-color: rgba(89, 13, 34, 0.2);
         }
 
         * {
@@ -28,82 +38,155 @@
 
         body {
             font-family: 'Nunito', sans-serif;
-            background: linear-gradient(135deg, #fff0f3 0%, #ffe5ec 100%);
+            background-color: var(--bg);
             color: var(--text);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            overflow-x: hidden;
+            justify-content: center;
             padding: 20px;
+            overflow-x: hidden;
         }
 
-        /* Container for all screens */
-        .app-container {
+        h1, h2 {
+            font-family: 'Pacifico', cursive;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: center;
+            max-width: 600px;
+            font-size: 1.1rem;
+        }
+
+        /* --- Container --- */
+        #game-container {
             width: 100%;
             max-width: 500px;
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            background: var(--white);
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(255, 77, 109, 0.15);
-            text-align: center;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow-color);
             position: relative;
-            transition: all 0.3s ease;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: height 0.3s ease;
         }
 
-        /* Typography */
-        h1, h2 {
-            font-family: 'Dancing Script', cursive;
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
-
-        h1 { font-size: 2.5rem; }
-        h2 { font-size: 2rem; }
-        
-        p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 25px;
-            color: #4a4a4a;
-        }
-
-        /* Buttons */
+        /* --- Buttons --- */
         .btn {
-            background: var(--primary);
+            background-color: var(--primary);
             color: white;
             border: none;
             padding: 12px 30px;
             font-size: 1.1rem;
             border-radius: 50px;
             cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.2s, background 0.3s, opacity 0.3s;
-            box-shadow: 0 4px 15px rgba(255, 77, 109, 0.3);
-            display: inline-block;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            transition: transform 0.2s, background-color 0.2s, opacity 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4);
+            margin-top: 10px;
         }
 
         .btn:hover {
+            background-color: #d63352;
             transform: translateY(-2px);
-            background: #d90429;
         }
 
         .btn:disabled {
-            background: #ccc;
+            background-color: #ccc;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
             opacity: 0.7;
         }
 
-        /* Screens Logic */
+        /* --- Puzzle Grid --- */
+        #puzzle-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+            aspect-ratio: 1 / 1; /* Keep it square */
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #ffe5ec;
+            border-radius: 15px;
+        }
+
+        /* --- Puzzle Piece (The 3D Tablet Look) --- */
+        .piece {
+            width: 100%;
+            height: 100%;
+            background-size: 300% 300%; /* Because it's a 3x3 grid */
+            background-repeat: no-repeat;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            
+            /* The 3D Depth Effect */
+            border: 2px solid rgba(255,255,255,0.6);
+            box-shadow: 
+                inset 3px 3px 6px rgba(255,255,255,0.7),
+                inset -3px -3px 6px rgba(0,0,0,0.1),
+                4px 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .piece:hover {
+            transform: scale(0.98);
+        }
+
+        .piece.selected {
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .piece.correct-flash {
+            animation: flashSuccess 0.5s ease;
+        }
+
+        /* --- Sections Visibility --- */
         .screen {
             display: none;
-            animation: fadeIn 0.5s ease;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.8s ease;
         }
+
         .screen.active {
-            display: block;
+            display: flex;
+        }
+
+        .note-box {
+            background: #fff0f3;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 10px 10px 0;
+            font-style: italic;
+            display: none; /* Hidden until solved */
+        }
+
+        .final-img {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
         }
 
         @keyframes fadeIn {
@@ -111,326 +194,277 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Puzzle Grid */
-        .puzzle-container {
-            width: 100%;
-            aspect-ratio: 3/4; /* Maintains portrait ratio for 3x4 grid */
-            background: #ddd;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 2px;
-            border: 4px solid white;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 0 auto 20px auto;
-            position: relative;
+        @keyframes flashSuccess {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(1.5); }
+            100% { filter: brightness(1); }
         }
 
-        .tile {
-            background-size: 300% 400%; /* 3 columns, 4 rows */
-            cursor: pointer;
-            transition: transform 0.2s, filter 0.2s;
-            position: relative;
-        }
-
-        .tile:hover {
-            filter: brightness(1.1);
-        }
-
-        .tile.selected {
-            border: 2px solid var(--primary);
-            z-index: 10;
-            transform: scale(0.95);
-            box-shadow: 0 0 10px var(--primary);
-        }
-
-        .tile.correct {
-            border: none;
-        }
-
-        /* Success Note Card */
-        .success-note {
-            background: #fff;
-            border-left: 5px solid var(--primary);
-            padding: 20px;
-            text-align: left;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-
-        /* Outro Images */
-        .outro-gif {
-            width: 100%;
-            border-radius: 12px;
-            margin-bottom: 20px;
+        /* Mobile tweaks */
+        @media (max-width: 400px) {
+            h1 { font-size: 1.8rem; }
+            #game-container { padding: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
+    <div id="game-container">
         
-        <div id="screen-intro" class="screen active">
-            <h1>Dear Gaby...</h1>
+        <div id="intro-screen" class="screen active">
+            <h1>My Dearest Gaby</h1>
             <p>
-                My dearest baby, you're about to play a game I built for you called "Some Reasons Why I am Grateful". 
-                It's a puzzle game where you re-arrange cartoon avatars of fun moments we shared together.
+                You're about to play a game I built for you called "I have the most beautiful life with you". 
+                It's a puzzle game where you re-arrange Disney-style avatars of fun moments we shared together.
             </p>
             <p>
-                It's a reminder that our lives are fun and filled with love. I love you and I can't wait to knock you off your feet with even better moments everyday of our lives.
+                It's Disney-styled because my life with you is a fantasy that always gets better. 
+                I want you to know that our lives are easy and filled with love — there's nothing our true love cannot overcome.
             </p>
-            <button class="btn" onclick="startGame()">Play Game</button>
+            <p>
+                I love you and I can't wait to knock you off your feet with even better moments and fantasies everyday of our lives.
+            </p>
+            <button class="btn" onclick="game.startGame()">Play Game ❤️</button>
         </div>
 
-        <div id="screen-game" class="screen">
+        <div id="level-screen" class="screen">
             <h2 id="level-title">Moment 1</h2>
             
-            <p style="font-size: 0.9rem; color: #888; margin-bottom: 10px;">Tap two tiles to swap them!</p>
-
-            <div class="puzzle-container" id="puzzle-board">
+            <div id="puzzle-board">
                 </div>
 
-            <div id="success-area" style="display: none;">
-                <div class="success-note">
-                    <strong>❤️ A Note:</strong><br>
-                    <span id="level-note">Text goes here...</span>
-                </div>
-                <button class="btn" onclick="nextLevel()">Play Next</button>
-            </div>
+            <button id="submit-btn" class="btn" disabled onclick="game.submitLevel()">Submit Puzzle</button>
 
-            <div id="action-area">
-                <button class="btn" id="submit-btn" onclick="submitPuzzle()" disabled>Submit Puzzle</button>
+            <div id="success-note" class="note-box">
+                <p id="note-text">Note goes here...</p>
+                <button class="btn" onclick="game.nextLevel()">Play Next ➔</button>
             </div>
         </div>
 
-        <div id="screen-outro" class="screen">
-            <h1>You Won!</h1>
-            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeDh2d2Q1MWtlbWpxNzY2ZHV3c2dnbWQzaWhqdGJpcWl4YnNhMG9xZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/KmxmoHUGPDjfQXqGgv/giphy.gif" alt="Cute Love Gif" class="outro-gif">
+        <div id="outro-screen" class="screen">
+            <h1>Happy Valentine's Day!</h1>
             <p>
-                My beautiful woman, puzzle time is over, but the game of our lives is always on. I enjoy playing it with you and I want to win it with you.
+                My beautiful woman, puzzle time is over, but the game of our lives is always on. 
+                I enjoy playing it with you and I want to enjoy it and win at it with you.
             </p>
-            <p style="font-size: 2rem;">❤️</p>
+            <img src="https://yemijohnson.com/wp-content/uploads/2026/02/night-out.jpg" alt="Us" class="final-img">
+            <p>I love you.</p>
         </div>
 
     </div>
 
     <script>
-        // --- DATA CONFIGURATION ---
-        // REPLACE THE IMAGE LINKS BELOW with your actual images.
-        // Current image is a placeholder from your prompt.
+        // --- Game Data ---
         const levels = [
             {
                 title: "Moment 1",
-                image: "https://www.regirlworld.ng/cdn/shop/files/Motherprofilepicture_1.jpg?v=1744905857&width=800",
-                note: "This is us in Seycheles. I am not sure how we decided on Seycheles, but I was glad we came."
+                img: "https://yemijohnson.com/wp-content/uploads/2026/02/introduction.jpg",
+                note: "This is us on our Introduction. The happiness I felt on this day was intense. I think I felt like I finally became a man on this day. Thank you for giving me this moment."
             },
             {
                 title: "Moment 2",
-                image: "https://www.regirlworld.ng/cdn/shop/files/Motherprofilepicture_1.jpg?v=1744905857&width=800",
-                note: "This was our first date. I had no idea how this will turn out on my way, but it was by far one of the best nights of my life."
+                img: "https://yemijohnson.com/wp-content/uploads/2026/02/wedding-day.jpg",
+                note: "This was our wedding day. This picture in the car was one of my favorite pictures of the day. Getting married to you was the most life-changing thing that ever happened to me and I am grateful."
             },
             {
                 title: "Moment 3",
-                image: "https://www.regirlworld.ng/cdn/shop/files/Motherprofilepicture_1.jpg?v=1744905857&width=800",
-                note: "This was our first date. I had no idea how this will turn out on my way, but it was by far one of the best nights of my life."
+                img: "https://yemijohnson.com/wp-content/uploads/2026/02/Yemis-birthday-.jpg",
+                note: "I had no plans for this birthday, but it turned out to be my favorite in a long time. I was most especially not expecting the curated gifts you got for me. It made me feel super-special + the cake stole my heart away. Thank you."
             },
             {
                 title: "Moment 4",
-                image: "https://www.regirlworld.ng/cdn/shop/files/Motherprofilepicture_1.jpg?v=1744905857&width=800",
-                note: "This was our first date. I had no idea how this will turn out on my way, but it was by far one of the best nights of my life."
+                img: "https://yemijohnson.com/wp-content/uploads/2026/02/abraka-resort.jpg",
+                note: "You know how I feel about this picture. I rest my case :)"
             },
             {
                 title: "Moment 5",
-                image: "https://www.regirlworld.ng/cdn/shop/files/Motherprofilepicture_1.jpg?v=1744905857&width=800",
-                note: "This was our first date. I had no idea how this will turn out on my way, but it was by far one of the best nights of my life."
+                img: "https://yemijohnson.com/wp-content/uploads/2026/02/at-nike-shop.jpg",
+                note: "You made me buy the Nike short at this store and it is one of my favorite buys. This is just one of the ways you have changed my taste forever. Even though I might squeeze my face sometimes, I love it. Plus the selfie we took at this store is now my wallpaper. We need to create a new wallpaper for me ahead of 2027."
+            },
+            {
+                title: "Moment 6",
+                img: "https://yemijohnson.com/wp-content/uploads/2026/02/random-saturday.jpg",
+                note: "This was a random Saturday that had started out hard with all the to-dos I had been piling up, but you came over to play with me and made it lighter. Thank you."
+            },
+            {
+                title: "Moment 7",
+                img: "https://yemijohnson.com/wp-content/uploads/2026/02/swimming-at-mauritius-resort.jpg",
+                note: "I loved our vacation in Mauritius and now I only want to have the most luxurious vacations with you. I can't wait to do with you every quarter :)"
+            },
+            {
+                title: "Moment 8",
+                img: "https://yemijohnson.com/wp-content/uploads/2026/02/sunny-day-in-mauritius-1.jpg",
+                note: "I don't remember what was happening here, but it seems like enjoyment wanted to kill us and we took a break to relax. I want to enjoy life with you till the end of time. You're everything for me."
             }
         ];
 
-        // --- GAME STATE ---
-        let currentLevelIndex = 0;
-        let selectedTile = null;
-        let tiles = []; // Holds the current order of tile indices [0, 1, 2...]
-        const rows = 4;
-        const cols = 3;
-
-        // --- DOM ELEMENTS ---
-        const screenIntro = document.getElementById('screen-intro');
-        const screenGame = document.getElementById('screen-game');
-        const screenOutro = document.getElementById('screen-outro');
-        
-        const puzzleBoard = document.getElementById('puzzle-board');
-        const levelTitle = document.getElementById('level-title');
-        const levelNote = document.getElementById('level-note');
-        const submitBtn = document.getElementById('submit-btn');
-        const successArea = document.getElementById('success-area');
-        const actionArea = document.getElementById('action-area');
-
-        // --- FUNCTIONS ---
-
-        function startGame() {
-            screenIntro.classList.remove('active');
-            screenGame.classList.add('active');
-            loadLevel(0);
-        }
-
-        function loadLevel(index) {
-            currentLevelIndex = index;
-            const data = levels[index];
+        // --- Game Logic ---
+        const game = {
+            currentLevelIndex: 0,
+            pieces: [], // Stores current state of the board [0,1,2...]
+            selectedPieceIndex: null,
             
-            // Reset UI
-            levelTitle.innerText = data.title;
-            levelNote.innerText = data.note;
-            successArea.style.display = 'none';
-            actionArea.style.display = 'block';
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Submit Puzzle";
-            
-            // Create tiles array [0, 1, ... 11]
-            tiles = Array.from({length: rows * cols}, (_, i) => i);
-            
-            // Scramble tiles
-            shuffle(tiles);
-            
-            // Render grid
-            renderBoard(data.image);
-        }
+            elements: {
+                intro: document.getElementById('intro-screen'),
+                level: document.getElementById('level-screen'),
+                outro: document.getElementById('outro-screen'),
+                board: document.getElementById('puzzle-board'),
+                title: document.getElementById('level-title'),
+                noteBox: document.getElementById('success-note'),
+                noteText: document.getElementById('note-text'),
+                submitBtn: document.getElementById('submit-btn')
+            },
 
-        function shuffle(array) {
-            // Fisher-Yates shuffle
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            // Ensure it doesn't accidentally shuffle into the solved state (rare but possible)
-            if (checkIfSolved()) shuffle(array);
-        }
+            startGame() {
+                this.switchScreen('level');
+                this.loadLevel(0);
+            },
 
-        function renderBoard(imageUrl) {
-            puzzleBoard.innerHTML = '';
-            
-            tiles.forEach((tileIndex, positionIndex) => {
-                const tile = document.createElement('div');
-                tile.classList.add('tile');
+            switchScreen(screenName) {
+                document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+                this.elements[screenName].classList.add('active');
+            },
+
+            loadLevel(index) {
+                this.currentLevelIndex = index;
+                const levelData = levels[index];
                 
-                // Calculate position of the original image slice
-                // tileIndex 0 = top left, tileIndex 11 = bottom right
-                const originRow = Math.floor(tileIndex / cols);
-                const originCol = tileIndex % cols;
+                // UI Reset
+                this.elements.title.innerText = levelData.title;
+                this.elements.noteBox.style.display = 'none';
+                this.elements.submitBtn.style.display = 'inline-block';
+                this.elements.submitBtn.disabled = true;
+                this.elements.board.style.pointerEvents = 'auto';
+                this.elements.board.innerHTML = '';
+                this.selectedPieceIndex = null;
+
+                // Create shuffled pieces
+                // We use an array [0, 1, ... 8] representing the correct ID of the image chunk
+                let initialArr = [0, 1, 2, 3, 4, 5, 6, 7, 8];
                 
-                const percentX = originCol * 50; // 0%, 50%, 100% (for 3 cols)
-                const percentY = originRow * 33.33; // 0%, 33%, 66%, 100% (for 4 rows)
+                // Shuffle until it's NOT solved by accident
+                do {
+                    this.shuffleArray(initialArr);
+                } while (this.isSolved(initialArr));
 
-                tile.style.backgroundImage = `url('${imageUrl}')`;
-                tile.style.backgroundPosition = `${percentX}% ${percentY}%`;
+                this.pieces = initialArr;
+                this.renderBoard(levelData.img);
+            },
+
+            renderBoard(imgUrl) {
+                this.elements.board.innerHTML = '';
                 
-                // Click event for swapping
-                tile.onclick = () => handleTileClick(positionIndex);
-                
-                puzzleBoard.appendChild(tile);
-            });
-        }
+                this.pieces.forEach((pieceId, index) => {
+                    const el = document.createElement('div');
+                    el.classList.add('piece');
+                    el.style.backgroundImage = `url('${imgUrl}')`;
+                    
+                    // Calculate background position based on the PIECE ID (the image chunk)
+                    // 3x3 grid logic: 
+                    // Col = id % 3, Row = Math.floor(id / 3)
+                    // 0 = 0% 0%, 1 = 50% 0%, 2 = 100% 0%
+                    const col = pieceId % 3;
+                    const row = Math.floor(pieceId / 3);
+                    
+                    el.style.backgroundPosition = `${col * 50}% ${row * 50}%`;
+                    
+                    // Click Event
+                    el.onclick = () => this.handlePieceClick(index);
+                    
+                    this.elements.board.appendChild(el);
+                });
+            },
 
-        function handleTileClick(index) {
-            // If the puzzle is already submitted/solved, do nothing
-            if (successArea.style.display === 'block') return;
+            handlePieceClick(clickedIndex) {
+                const pieceElements = document.querySelectorAll('.piece');
 
-            const tileElements = document.querySelectorAll('.tile');
+                // If clicking the same piece, deselect
+                if (this.selectedPieceIndex === clickedIndex) {
+                    pieceElements[clickedIndex].classList.remove('selected');
+                    this.selectedPieceIndex = null;
+                    return;
+                }
 
-            if (selectedTile === null) {
-                // Select first tile
-                selectedTile = index;
-                tileElements[index].classList.add('selected');
-            } else if (selectedTile === index) {
-                // Deselect if clicking same tile
-                tileElements[index].classList.remove('selected');
-                selectedTile = null;
-            } else {
-                // Swap logic
-                swapTiles(selectedTile, index);
-                
-                // Remove selection visual
-                tileElements[selectedTile].classList.remove('selected');
-                selectedTile = null;
-
-                // Re-render to show new positions
-                renderBoard(levels[currentLevelIndex].image);
-
-                // Check if solved to enable button
-                if (checkIfSolved()) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = "Submit Puzzle (Ready!)";
+                // If nothing selected, select this one
+                if (this.selectedPieceIndex === null) {
+                    this.selectedPieceIndex = clickedIndex;
+                    pieceElements[clickedIndex].classList.add('selected');
                 } else {
-                    submitBtn.disabled = true;
-                    submitBtn.innerText = "Submit Puzzle";
+                    // Swap logic
+                    this.swapPieces(this.selectedPieceIndex, clickedIndex);
+                    
+                    // Remove styling
+                    pieceElements[this.selectedPieceIndex].classList.remove('selected');
+                    this.selectedPieceIndex = null;
+                    
+                    // Check validity
+                    this.checkPuzzleState();
+                }
+            },
+
+            swapPieces(indexA, indexB) {
+                // Swap in data array
+                const temp = this.pieces[indexA];
+                this.pieces[indexA] = this.pieces[indexB];
+                this.pieces[indexB] = temp;
+
+                // Re-render (easiest way to update visuals without complex DOM manipulation)
+                // We keep the image of the current level
+                this.renderBoard(levels[this.currentLevelIndex].img);
+            },
+
+            checkPuzzleState() {
+                const solved = this.isSolved(this.pieces);
+                this.elements.submitBtn.disabled = !solved;
+            },
+
+            isSolved(arr) {
+                // It is solved if every item index matches its value (0 is at 0, 1 is at 1...)
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i] !== i) return false;
+                }
+                return true;
+            },
+
+            submitLevel() {
+                // Double check just in case
+                if (!this.isSolved(this.pieces)) return;
+
+                const levelData = levels[this.currentLevelIndex];
+                
+                // Visual feedback
+                document.querySelectorAll('.piece').forEach(p => p.classList.add('correct-flash'));
+                this.elements.board.style.pointerEvents = 'none'; // Lock board
+                
+                // Hide submit, show note
+                this.elements.submitBtn.style.display = 'none';
+                this.elements.noteText.innerText = levelData.note;
+                
+                // Small delay for animation
+                setTimeout(() => {
+                    this.elements.noteBox.style.display = 'block';
+                }, 300);
+            },
+
+            nextLevel() {
+                const nextIdx = this.currentLevelIndex + 1;
+                if (nextIdx < levels.length) {
+                    this.loadLevel(nextIdx);
+                } else {
+                    this.switchScreen('outro');
+                }
+            },
+
+            shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
                 }
             }
-        }
-
-        function swapTiles(pos1, pos2) {
-            const temp = tiles[pos1];
-            tiles[pos1] = tiles[pos2];
-            tiles[pos2] = temp;
-        }
-
-        function checkIfSolved() {
-            for (let i = 0; i < tiles.length; i++) {
-                if (tiles[i] !== i) return false;
-            }
-            return true;
-        }
-
-        function submitPuzzle() {
-            // Visual feedback
-            const tileElements = document.querySelectorAll('.tile');
-            tileElements.forEach(t => {
-                t.style.border = 'none';
-                t.style.gap = '0';
-            });
-
-            // Confetti
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#ff4d6d', '#ff8fa3', '#fff']
-            });
-
-            // Show Note
-            actionArea.style.display = 'none';
-            successArea.style.display = 'block';
-        }
-
-        function nextLevel() {
-            if (currentLevelIndex < levels.length - 1) {
-                loadLevel(currentLevelIndex + 1);
-            } else {
-                // Game Over / Outro
-                screenGame.classList.remove('active');
-                screenOutro.classList.add('active');
-                // Final celebration
-                let end = Date.now() + 3000;
-                (function frame() {
-                    confetti({
-                        particleCount: 5,
-                        angle: 60,
-                        spread: 55,
-                        origin: { x: 0 },
-                        colors: ['#ff4d6d', '#ff8fa3']
-                    });
-                    confetti({
-                        particleCount: 5,
-                        angle: 120,
-                        spread: 55,
-                        origin: { x: 1 },
-                        colors: ['#ff4d6d', '#ff8fa3']
-                    });
-                    if (Date.now() < end) requestAnimationFrame(frame);
-                }());
-            }
-        }
+        };
 
     </script>
 </body>
 </html>
+
+```
