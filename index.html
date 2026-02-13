@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,32 +97,46 @@
             opacity: 0.7;
         }
 
-        /* --- Puzzle Grid --- */
+        /* Secondary Button (Hint) */
+        .btn-secondary {
+            background-color: #fff;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            box-shadow: none;
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .btn-secondary:hover {
+            background-color: #fff0f3;
+        }
+
+        /* --- Puzzle Grid (2x2) --- */
         #puzzle-board {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr); /* Changed to 2 columns */
+            grid-template-rows: repeat(2, 1fr);    /* Changed to 2 rows */
             gap: 8px;
             width: 100%;
-            aspect-ratio: 1 / 1; /* Keep it square */
+            aspect-ratio: 1 / 1; 
             margin-bottom: 20px;
             padding: 10px;
             background: #ffe5ec;
             border-radius: 15px;
         }
 
-        /* --- Puzzle Piece (The 3D Tablet Look) --- */
+        /* --- Puzzle Piece --- */
         .piece {
             width: 100%;
             height: 100%;
-            background-size: 300% 300%; /* Because it's a 3x3 grid */
+            background-size: 200% 200%; /* Changed for 2x2 grid */
             background-repeat: no-repeat;
             border-radius: 12px;
             cursor: pointer;
             position: relative;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             
-            /* The 3D Depth Effect */
+            /* 3D Depth Effect */
             border: 2px solid rgba(255,255,255,0.6);
             box-shadow: 
                 inset 3px 3px 6px rgba(255,255,255,0.7),
@@ -166,7 +179,7 @@
             margin: 15px 0;
             border-radius: 0 10px 10px 0;
             font-style: italic;
-            display: none; /* Hidden until solved */
+            display: none;
         }
 
         .final-img {
@@ -174,6 +187,39 @@
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             margin-bottom: 20px;
+        }
+
+        /* --- Modal for Hints --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 90%;
+            max-height: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 10px;
+            display: block;
+            margin-bottom: 15px;
         }
 
         @keyframes fadeIn {
@@ -187,7 +233,6 @@
             100% { filter: brightness(1); }
         }
 
-        /* Mobile tweaks */
         @media (max-width: 400px) {
             h1 { font-size: 1.8rem; }
             #game-container { padding: 20px; }
@@ -195,6 +240,14 @@
     </style>
 </head>
 <body>
+
+    <div id="hint-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 10px; color: var(--primary);">Here is the goal:</h3>
+            <img id="hint-img" src="" alt="Hint">
+            <button class="btn" onclick="game.closeHint()">Close</button>
+        </div>
+    </div>
 
     <div id="game-container">
         
@@ -217,6 +270,8 @@
         <div id="level-screen" class="screen">
             <h2 id="level-title">Moment 1</h2>
             
+            <button class="btn btn-secondary" onclick="game.showHint()">Show Hint 💡</button>
+
             <div id="puzzle-board">
                 </div>
 
@@ -299,7 +354,9 @@
                 title: document.getElementById('level-title'),
                 noteBox: document.getElementById('success-note'),
                 noteText: document.getElementById('note-text'),
-                submitBtn: document.getElementById('submit-btn')
+                submitBtn: document.getElementById('submit-btn'),
+                modal: document.getElementById('hint-modal'),
+                hintImg: document.getElementById('hint-img')
             },
 
             startGame() {
@@ -326,8 +383,8 @@
                 this.selectedPieceIndex = null;
 
                 // Create shuffled pieces
-                // We use an array [0, 1, ... 8] representing the correct ID of the image chunk
-                let initialArr = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+                // 2x2 grid = [0, 1, 2, 3]
+                let initialArr = [0, 1, 2, 3];
                 
                 // Shuffle until it's NOT solved by accident
                 do {
@@ -347,13 +404,13 @@
                     el.style.backgroundImage = `url('${imgUrl}')`;
                     
                     // Calculate background position based on the PIECE ID (the image chunk)
-                    // 3x3 grid logic: 
-                    // Col = id % 3, Row = Math.floor(id / 3)
-                    // 0 = 0% 0%, 1 = 50% 0%, 2 = 100% 0%
-                    const col = pieceId % 3;
-                    const row = Math.floor(pieceId / 3);
+                    // 2x2 grid logic: 
+                    // Col = id % 2, Row = Math.floor(id / 2)
+                    // Multiplier is 100% because there are only 2 columns/rows (0% and 100%)
+                    const col = pieceId % 2;
+                    const row = Math.floor(pieceId / 2);
                     
-                    el.style.backgroundPosition = `${col * 50}% ${row * 50}%`;
+                    el.style.backgroundPosition = `${col * 100}% ${row * 100}%`;
                     
                     // Click Event
                     el.onclick = () => this.handlePieceClick(index);
@@ -395,8 +452,7 @@
                 this.pieces[indexA] = this.pieces[indexB];
                 this.pieces[indexB] = temp;
 
-                // Re-render (easiest way to update visuals without complex DOM manipulation)
-                // We keep the image of the current level
+                // Re-render
                 this.renderBoard(levels[this.currentLevelIndex].img);
             },
 
@@ -406,7 +462,6 @@
             },
 
             isSolved(arr) {
-                // It is solved if every item index matches its value (0 is at 0, 1 is at 1...)
                 for (let i = 0; i < arr.length; i++) {
                     if (arr[i] !== i) return false;
                 }
@@ -414,7 +469,6 @@
             },
 
             submitLevel() {
-                // Double check just in case
                 if (!this.isSolved(this.pieces)) return;
 
                 const levelData = levels[this.currentLevelIndex];
@@ -447,6 +501,17 @@
                     const j = Math.floor(Math.random() * (i + 1));
                     [array[i], array[j]] = [array[j], array[i]];
                 }
+            },
+
+            // --- Hint System ---
+            showHint() {
+                const currentImg = levels[this.currentLevelIndex].img;
+                this.elements.hintImg.src = currentImg;
+                this.elements.modal.style.display = 'flex';
+            },
+
+            closeHint() {
+                this.elements.modal.style.display = 'none';
             }
         };
 
